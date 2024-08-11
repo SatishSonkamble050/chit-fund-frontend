@@ -1,27 +1,35 @@
 // src/components/MonthDetails.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaCheckCircle, FaEye, FaTimesCircle } from "react-icons/fa"; // Icons for status
 import TransactionPopup from "./TransactionPopup";
+import { getMembersMonthlyPaymentData } from "../services/chitFundService";
+import { useLocation } from "react-router-dom";
+import { monthConverte } from "../utils/monthConvert";
+const MonthDetails = () => {
+  const { state } = useLocation();
+  const { month, chitID } = state;
+  console.log("STATE data : ", state);
+  const [allData, setAllData] = useState({});
+  const [monthlyData, setMonthlyData] = useState([]);
 
-const MonthDetails = ({ month, members }) => {
-  const monthlyData = {
-    month: "January 2024",
-    members: [
-      {
-        name: "John Doe",
-        paid: true,
-        amountPaid: 5000,
-        transactions: [{ amount: 5000, paidDate: "2024-01-05" }],
-      },
-      { name: "Jane Smith", paid: false, amountPaid: 0, transactions: [] },
-      {
-        name: "Alice Johnson",
-        paid: true,
-        amountPaid: 5000,
-        transactions: [{ amount: 5000, paidDate: "2024-01-10" }],
-      },
-    ],
-  };
+  useEffect(() => {
+    async function getMemberPaymentList() {
+      const data = {
+        chitFundId: chitID,
+        month: monthConverte(month.month),
+        year: month.year,
+      };
+
+      const resp = await getMembersMonthlyPaymentData(data);
+      console.log(resp);
+      if (resp.status === 200) {
+        setAllData(resp.data);
+        setMonthlyData(resp.data.memberStatuses);
+      }
+    }
+
+    getMemberPaymentList();
+  }, []);
 
   const [selectedUser, setSelectedUser] = useState(null);
 
@@ -35,7 +43,7 @@ const MonthDetails = ({ month, members }) => {
 
   return (
     <div className="p-4 bg-gray-100 rounded-md shadow-md">
-      <h3 className="text-lg font-semibold mb-2">{monthlyData.month}</h3>
+      <h3 className="text-lg font-semibold mb-2">{month.month}</h3>
       <table className="min-w-full bg-white border border-gray-200 rounded-md shadow-md">
         <thead>
           <tr className="border-b border-gray-300">
@@ -45,16 +53,16 @@ const MonthDetails = ({ month, members }) => {
           </tr>
         </thead>
         <tbody>
-          {monthlyData.members.map((member, index) => (
+          {monthlyData?.map((member, index) => (
             <tr
               key={index}
               className="border-b border-gray-200 cursor-pointer hover:bg-gray-100"
               onClick={() => handleUserClick(member)}
             >
               <td className="p-2">{member.name}</td>
-              <td className="p-2">${member.amountPaid}</td>
+              <td className="p-2">${member.paidAmount}</td>
               <td className="p-2">
-                {member.paid ? (
+                {member.paidStatus == "Paid" ? (
                   <span className="text-green-500 flex items-center">
                     <FaCheckCircle className="mr-1" />
                     Paid
@@ -74,7 +82,13 @@ const MonthDetails = ({ month, members }) => {
         </tbody>
       </table>
       {selectedUser && (
-        <TransactionPopup user={selectedUser} onClose={handleClosePopup} />
+        <TransactionPopup
+          user={selectedUser}
+          onClose={handleClosePopup}
+          chitID={allData.chitId}
+          month = {month}
+          orgID={allData.organizationId}
+        />
       )}
     </div>
   );

@@ -1,25 +1,41 @@
-import React, { useState } from 'react';
-import { FaTimes } from 'react-icons/fa'; // Close icon
+import React, { useState } from "react";
+import { FaTimes } from "react-icons/fa"; // Close icon
+import { createTransactionSerivce } from "../services/chitFundService";
+import { monthConverte } from "../utils/monthConvert";
 
-const TransactionPopup = ({ user, onClose }) => {
-  const [paymentMode, setPaymentMode] = useState('Cash');
-  const [amount, setAmount] = useState('');
-  const [transactionId, setTransactionId] = useState('');
-  const [transactions, setTransactions] = useState(user.transactions);
+const TransactionPopup = ({ chitID, orgID, user, month, onClose }) => {
+  const [paymentMode, setPaymentMode] = useState("Cash");
+  const [amount, setAmount] = useState("");
+  const [transactionId, setTransactionId] = useState("");
+  const [transactions, setTransactions] = useState(user);
 
-  const handleAddTransaction = (e) => {
+  const handleAddTransaction = async(e) => {
     e.preventDefault();
-    const newTransaction = {
-      amount: parseFloat(amount),
-      paidDate: new Date().toISOString().split('T')[0], // Auto set payment date to today
-      transactionId: transactionId || 'N/A',
-      paymentMode: paymentMode || 'Not Specified',
-    };
-    setTransactions([...transactions, newTransaction]);
-    // Here, you would typically also send the new transaction to the backend
-    setPaymentMode('Cash');
-    setAmount('');
-    setTransactionId('');
+    // const newTransaction = {
+    //   amount: parseFloat(amount),
+    //   paidDate: new Date().toISOString().split("T")[0], // Auto set payment date to today
+    //   transactionId: transactionId || "N/A",
+    //   paymentMode: paymentMode || "Not Specified",
+    // };
+    // setTransactions([...transactions, newTransaction]);
+    // // Here, you would typically also send the new transaction to the backend
+    // setPaymentMode("Cash");
+    // setAmount("");
+    // setTransactionId("");
+
+    const data = {
+      type: "Deposit",
+      amount: amount,
+      chitFundId: chitID,   
+      userId: user.id,       
+      organizationId: orgID, 
+      chitMonth: monthConverte(month.month),
+      chitYear: month.year,
+      paymentDate: new Date(),
+      paymentMode : paymentMode
+    }
+    const resp = await createTransactionSerivce(data)
+    console.log("RESULT : ", resp)
   };
 
   return (
@@ -31,7 +47,9 @@ const TransactionPopup = ({ user, onClose }) => {
         >
           <FaTimes />
         </button>
-        <h2 className="text-lg font-bold mb-2">Transaction Details for {user.name}</h2>
+        <h2 className="text-lg font-bold mb-2">
+          Transaction Details for {user.name}
+        </h2>
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border border-gray-200 rounded-md mb-4">
             <thead>
@@ -43,27 +61,29 @@ const TransactionPopup = ({ user, onClose }) => {
               </tr>
             </thead>
             <tbody>
-              {transactions.length ? (
-                transactions.map((transaction, index) => (
-                  <tr key={index} className="border-b border-gray-200">
-                    <td className="p-2">${transaction.amount}</td>
-                    <td className="p-2">{transaction.paidDate}</td>
-                    <td className="p-2">{transaction.paymentMode}</td>
-                    <td className="p-2">{transaction.transactionId}</td>
-                  </tr>
-                ))
+              {transactions.paidStatus == 'Paid'? (
+                <tr className="border-b border-gray-200">
+                  <td className="p-2">${transactions?.paidAmount}</td>
+                  <td className="p-2">{transactions?.paidDate}</td>
+                  <td className="p-2">{transactions?.paymentMode}</td>
+                  <td className="p-2">{transactions?.transactionId}</td>
+                </tr>
               ) : (
                 <tr>
-                  <td colSpan="4" className="p-2 text-center">No transactions</td>
+                  <td colSpan="4" className="p-2 text-center">
+                    No transactions
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
 
-        {!user.paid && (
+        {user.paidStatus != "Paid" && (
           <>
-            <h3 className="text-lg font-semibold mb-2">Add Manual Transaction</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Add Manual Transaction
+            </h3>
             <form onSubmit={handleAddTransaction} className="space-y-4">
               <div>
                 <label className="block text-gray-700">Payment Mode</label>
@@ -88,7 +108,9 @@ const TransactionPopup = ({ user, onClose }) => {
                 />
               </div>
               <div>
-                <label className="block text-gray-700">Transaction ID (Optional)</label>
+                <label className="block text-gray-700">
+                  Transaction ID (Optional)
+                </label>
                 <input
                   type="text"
                   value={transactionId}

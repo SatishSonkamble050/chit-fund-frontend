@@ -2,10 +2,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const CompletedMonths = ({ completedMonths }) => {
+const CompletedMonths = ({ completedMonths, chitID }) => {
     const navigate = useNavigate()
     const onMonthClick = (month)=>{
-        navigate('/monthly-details')
+        navigate('/monthly-details', {state : {month, chitID}})
     }
   return (
     <div>
@@ -15,13 +15,15 @@ const CompletedMonths = ({ completedMonths }) => {
           <tr className="border-b border-gray-300">
             <th className="p-2 text-left">Month</th>
             <th className="p-2 text-left">Amount</th>
+            <th className="p-2 text-left">Due</th>
           </tr>
         </thead>
         <tbody>
           {completedMonths.map((month, index) => (
             <tr key={index} className="border-b border-gray-200" onClick={() => onMonthClick(month)} >
-              <td className="p-2">{month.month}</td>
-              <td className="p-2">${month.amount}</td>
+              <td className="p-2">{month.year} {month.month} </td>
+              <td className="p-2 "><span className='bg-green-600 text-white p-2'>Rs.{month.paidAmount}</span></td>
+              <td className="p-2 "><span className='bg-red-600 text-white p-2'>Rs.{month.dueAmount}</span></td>
             </tr>
           ))}
         </tbody>

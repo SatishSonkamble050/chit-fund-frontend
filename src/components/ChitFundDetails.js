@@ -4,6 +4,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { FaUsers, FaCalendarCheck } from 'react-icons/fa';
 import CompletedMonths from './CompletedMonths'; // Import CompletedMonths component
 import ChitFundMembers from './ChitFundMembers';   // Import ChitFundMembers component
+import { getMInthlyChitListService } from '../services/chitFundService';
 
 const ChitFundDetails = () => {
   const { id } = useParams(); // Get the chit fund ID from the URL
@@ -14,16 +15,22 @@ const ChitFundDetails = () => {
   const [completedMonths, setCompletedMonths] = useState([]);
   const [members, setMembers] = useState([]);
 
+  const getMonthlyChitList = async()=>{
+    const resp = await getMInthlyChitListService(state.chitFund._id)
+    setCompletedMonths(resp.data)
+  }
+
   useEffect(() => {
     if (state?.chitFund) {
       // Use passed data
       setChitFund(state.chitFund);
+      getMonthlyChitList()
       // Mock data for demonstration
-      setCompletedMonths([
-        { month: 'January 2024', amount: 5000 },
-        { month: 'February 2024', amount: 5000 },
-        { month: 'March 2024', amount: 5000 },
-      ]);
+      // setCompletedMonths([
+      //   { month: 'January 2024', amount: 5000 },
+      //   { month: 'February 2024', amount: 5000 },
+      //   { month: 'March 2024', amount: 5000 },
+      // ]);
       // setMembers([
       //   { name: 'John Doe', contribution: 5000 },
       //   { name: 'Jane Smith', contribution: 5000 },
@@ -85,7 +92,7 @@ const ChitFundDetails = () => {
           </div>
 
           {activeTab === 'completedMonths' && (
-            <CompletedMonths completedMonths={completedMonths} /> // Use CompletedMonths component
+            <CompletedMonths completedMonths={completedMonths} chitID = {chitFund._id}/> // Use CompletedMonths component
           )}
 
           {activeTab === 'members' && (

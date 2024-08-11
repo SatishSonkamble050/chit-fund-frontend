@@ -86,7 +86,49 @@ export const addMemberToChit = async (data) => {
 export const removeMemberFromChitFund = async (data) => {
   const {chitId, memberId} = data
   try {
-    const response = await api.delete(`http://localhost:5000/api/chit-funds/${chitId}/member/${memberId}`, data);
+    const response = await api.delete(`/chit-funds/${chitId}/member/${memberId}`, data);
+    return response;
+  } catch (error) {
+    console.error('Error adding transaction:', error);
+    throw error;
+  }
+};
+
+
+// Tranaction ------
+
+// getting the list of all month from start to end month of chit----- 
+export const getMInthlyChitListService = async (id) => {
+  try {
+    const response = await api.get(`/chit-funds/chit-fund-payments/${id}`);
+    return response;
+  } catch (error) {
+    console.error('Error adding transaction:', error);
+    throw error;
+  }
+};
+
+
+// create a tranaaction ---------
+
+export const createTransactionSerivce = async (data) => {
+  const {chitId, memberId} = data
+  try {
+    const response = await api.post(`/transactions`,data);
+    return response;
+  } catch (error) {
+    console.error('Error adding transaction:', error);
+    throw error;
+  }
+};
+
+
+
+// geting data of particular month members are paid or not -----------------
+
+export const getMembersMonthlyPaymentData = async (data) => {
+  try {
+    const response = await api.post(`/chit-funds/member-payment-status`, data);
     return response;
   } catch (error) {
     console.error('Error adding transaction:', error);

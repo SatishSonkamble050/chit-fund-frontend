@@ -29,7 +29,7 @@ const ChitFundMembers = ({ chitID, members, onAddMember, onRemoveMember }) => {
     fetchUsers();
   }, [adminId]);
 
-  // Filter users based on search term
+  // Filter users based on search term  
   const handleSearch = (e) => {
     const searchTerm = e.target.value;
     setNewMemberName(searchTerm);
